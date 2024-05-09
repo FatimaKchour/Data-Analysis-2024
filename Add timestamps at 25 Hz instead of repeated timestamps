@@ -1,0 +1,25 @@
+import pandas as pd
+
+def update_timestamps(df, column_name, frame_rate):
+    """Update the timestamps based on the frame rate starting from the first given timestamp."""
+    initial_timestamp = df[column_name].iloc[0]  # Starting timestamp
+    increment = 1 / frame_rate  # Time increment between frames
+    
+    # Generate new timestamps for each row
+    new_timestamps = [initial_timestamp + i * increment for i in range(len(df))]
+    df[column_name] = new_timestamps  # Update the DataFrame with new timestamps
+    return df
+
+# Path to the Excel file
+file_path = 'path_to_your_excel_file.xlsx'
+
+# Load the Excel file
+df = pd.read_excel(file_path)
+
+# Assuming the timestamp column is named 'TIMESTAMP'
+df = update_timestamps(df, 'TIMESTAMP', 25)
+
+# Save the changes back to the same Excel file
+df.to_excel(file_path, index=False)
+
+print("The timestamps have been updated and saved back to the same Excel file.")
