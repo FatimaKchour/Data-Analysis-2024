@@ -6,15 +6,15 @@ excel_path = 'path_to_your_excel_file.xlsx'
 # Path to the directory with the image files
 folder_path = 'path_to_your_images_folder'
 
-# Read the Excel file
+# Load the Excel file
 data = pd.read_excel(excel_path)
 
 # Iterate over the rows of the DataFrame
 for index, row in data.iterrows():
-    # Construct the old file name
-    old_name = f"frame_{row['ID']}.jpg"
-    # Construct the new file name
-    new_name = f"{row['ID']}_{row['TIMESTAMP']}.jpg"
+    # Convert 'ID' to integer and construct the old file name
+    old_name = f"frame_{int(row['ID'])}.jpg"
+    # Construct the new file name (adjust as needed)
+    new_name = f"{int(row['ID'])}_{row['TIMESTAMP']}.jpg"
     # Full path for old and new names
     old_file_path = os.path.join(folder_path, old_name)
     new_file_path = os.path.join(folder_path, new_name)
