@@ -1,0 +1,25 @@
+from PIL import Image
+import os
+
+def resize_images_in_folder(input_folder, output_folder, new_size):
+    for filename in os.listdir(input_folder):
+        if filename.endswith('.tiff') or filename.endswith('.tif'):
+            input_path = os.path.join(input_folder, filename)
+            output_path = os.path.join(output_folder, filename)
+            with Image.open(input_path) as img:
+                # Use Image.Resampling.LANCZOS for high-quality downsampling
+                resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+                resized_img.save(output_path, format='TIFF')  # Save the resized image as TIFF
+
+# Specify the directory containing the original images and the directory to save the resized images
+input_folder = 'path_to_your_input_folder'
+output_folder = 'path_to_your_output_folder'
+
+# Ensure the output folder exists
+os.makedirs(output_folder, exist_ok=True)
+
+# New size (width, height)
+new_size = (362, 360)
+
+# Resize the images in the folder
+resize_images_in_folder(input_folder, output_folder, new_size)
