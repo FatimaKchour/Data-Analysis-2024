@@ -1,0 +1,28 @@
+import pandas as pd
+
+# Define the conversion function
+def convert_time(time_str):
+    # Remove potential leading zeros and split based on the decimal
+    parts = time_str.split('.')
+    main_part = parts[0].zfill(6)  # Ensure it's at least 6 characters long, e.g., 143509 -> 143509
+    fractional_seconds = float('0.' + parts[1]) if len(parts) > 1 else 0
+
+    # Extract hours, minutes, seconds
+    hours = int(main_part[:2])
+    minutes = int(main_part[2:4])
+    seconds = int(main_part[4:6])
+
+    # Calculate total seconds
+    total_seconds = hours * 3600 + minutes * 60 + seconds + fractional_seconds
+    return total_seconds
+
+# Load the Excel file
+df = pd.read_excel('C:/Users/user/Desktop/PNRR/GPS/data/2024_04_18_16_35_30/Timeabsolute.xlsx')
+
+# Apply the conversion to the 'Time' column
+df['T_absolute'] = df['Time'].apply(lambda x: convert_time(str(x)))
+
+# Save the modified DataFrame to a new Excel file
+df.to_excel('C:/Users/user/Desktop/PNRR/GPS/data/2024_04_18_16_35_30/output.xlsx', index=False)
+
+print("Conversion complete and file saved.")
