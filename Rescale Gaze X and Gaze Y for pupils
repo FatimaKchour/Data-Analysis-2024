@@ -1,0 +1,24 @@
+import pandas as pd
+
+# Load the CSV file
+file_path = 'path_to_your_file.csv'  # Update with the path to your CSV file
+df = pd.read_csv(file_path)
+
+# Original dimensions
+original_width = 1600
+original_height = 1200
+
+# New dimensions
+new_width = 362
+new_height = 360
+
+# Calculate scaling factors
+scale_x = new_width / original_width
+scale_y = new_height / original_height
+
+# Apply scaling
+df['GAZE X_New'] = df['GAZE X_Original'] * scale_x
+df['GAZE Y_New'] = df['GAZE Y_Original'] * scale_y
+
+# Save the updated dataframe back to the CSV file
+df.to_csv(file_path, index=False)  # Set index=False to avoid adding an unwanted column of indices
