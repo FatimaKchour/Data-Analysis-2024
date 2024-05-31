@@ -1,12 +1,26 @@
 import pandas as pd
 
 # Load the data from the Excel file
-file_path = 'path_to_your_excel_file.xlsx'  # Replace with your file path
+file_path = '/mnt/data/file-J8q8RqiykzXZnU5oXlJB0HlW'  # Replace with your file path
 df = pd.read_excel(file_path)
+
+# Convert TIMESTAMP from seconds to milliseconds
+df['TIMESTAMP'] = df['TIMESTAMP'] * 1000
+
+# Define fixation duration thresholds in milliseconds
+min_fixation_threshold = 100  # 100 milliseconds
+max_fixation_threshold = 3000  # 3000 milliseconds (3 seconds)
+
+# Ensure columns exist in the DataFrame
+df['GLANCE_DURATION'] = None
+df['GLANCE_DURATION_milliseconds'] = None
+df['TIMESTAMP_INITIAL'] = None
+df['TIMESTAMP_FINAL'] = None
 
 # Initialize variables to track the start of the fixations
 last_id = None
 start_timestamp = None
+start_idx = None
 
 # Iterate over the dataframe to fill OBJECT_FIXATED and calculate GLANCE_DURATION
 for i in range(len(df)):
@@ -21,7 +35,12 @@ for i in range(len(df)):
             # New fixation starts
             if last_id is not None and start_timestamp is not None:
                 # Calculate the duration for the previous fixation
-                df.loc[start_idx, 'GLANCE_DURATION'] = end_timestamp - start_timestamp
+                duration = end_timestamp - start_timestamp
+                if min_fixation_threshold <= duration <= max_fixation_threshold:
+                    df.loc[start_idx, 'GLANCE_DURATION'] = duration / 1000  # Convert to seconds
+                    df.loc[start_idx, 'GLANCE_DURATION_milliseconds'] = duration
+                    df.loc[start_idx, 'TIMESTAMP_INITIAL'] = start_timestamp
+                    df.loc[start_idx, 'TIMESTAMP_FINAL'] = end_timestamp
             
             # Start new fixation
             last_id = current_id
@@ -34,18 +53,29 @@ for i in range(len(df)):
     else:
         # End the previous fixation
         if last_id is not None and start_timestamp is not None:
-            df.loc[start_idx, 'GLANCE_DURATION'] = end_timestamp - start_timestamp
+            duration = end_timestamp - start_timestamp
+            if min_fixation_threshold <= duration <= max_fixation_threshold:
+                df.loc[start_idx, 'GLANCE_DURATION'] = duration / 1000  # Convert to seconds
+                df.loc[start_idx, 'GLANCE_DURATION_milliseconds'] = duration
+                df.loc[start_idx, 'TIMESTAMP_INITIAL'] = start_timestamp
+                df.loc[start_idx, 'TIMESTAMP_FINAL'] = end_timestamp
         
         # Reset variables
         last_id = None
         start_timestamp = None
+        start_idx = None
 
 # Handle the last fixation in the loop
 if last_id is not None and start_timestamp is not None:
-    df.loc[start_idx, 'GLANCE_DURATION'] = end_timestamp - start_timestamp
+    duration = end_timestamp - start_timestamp
+    if min_fixation_threshold <= duration <= max_fixation_threshold:
+        df.loc[start_idx, 'GLANCE_DURATION'] = duration / 1000  # Convert to seconds
+        df.loc[start_idx, 'GLANCE_DURATION_milliseconds'] = duration
+        df.loc[start_idx, 'TIMESTAMP_INITIAL'] = start_timestamp
+        df.loc[start_idx, 'TIMESTAMP_FINAL'] = end_timestamp
 
 # Save the updated DataFrame back to the Excel file
-output_file_path = 'path_to_your_output_excel_file.xlsx'  # Replace with your output file path
+output_file_path = 'output_file.xlsx'  # Replace with your output file path
 df.to_excel(output_file_path, index=False)
 
 print("Processing complete. The results have been saved to the output file.")
