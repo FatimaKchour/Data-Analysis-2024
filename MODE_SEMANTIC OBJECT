@@ -1,0 +1,69 @@
+import pandas as pd
+
+# Load the updated Excel file
+file_path = '/mnt/data/TOTAL_acquisition_results_Copy_3.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Define priority categories
+priority_categories = {
+    'person': 1, 'truck': 1, 'bus': 1, 'motorcycle': 1, 'car': 1, 'rider': 1, 'bicycle': 1, 'train': 1,
+    'building': 2, 'wall': 2, 'fence': 2, 'pole': 2, 'vegetation': 2,
+    'road': 3, 'sidewalk': 3, 'sky': 3, 'terrain': 3, 'traffic light': 3, 'traffic sign': 3
+}
+
+# Function to determine mode with priority
+def mode_with_priority(series, priority_dict):
+    mode_val = series.mode()
+    if len(mode_val) > 1:  # If there is more than one mode
+        mode_val = sorted(mode_val, key=lambda x: priority_dict.get(x, float('inf')))[0]  # Use priority to resolve tie
+    else:
+        mode_val = mode_val[0] if not mode_val.empty else None
+    return mode_val
+
+# Initialize the new columns
+df['MODE_NEW_SEMANTIC_OBJECT_CLASS'] = None
+df['MODE_NEW_SEMANTIC_OBJECT_QUADRANT'] = None
+
+# Iterate over each unique timestamp interval
+for i, row in df.iterrows():
+    if pd.notna(row['TIMESTAMP_INITIAL']) and pd.notna(row['TIMESTAMP_FINAL']):
+        # Filter the dataframe to get the relevant rows within the timestamp interval
+        mask = (df['TIMESTAMP'] >= row['TIMESTAMP_INITIAL']) & (df['TIMESTAMP'] <= row['TIMESTAMP_FINAL'])
+        subset = df.loc[mask, 'NEW_SEMANTIC_OBJ_CLASS']
+        
+        # Skip if the subset is empty or only contains NaN values
+        if subset.dropna().empty:
+            continue
+        
+        # Calculate the mode of the NEW_SEMANTIC_OBJ_CLASS within this subset
+        most_frequent_obj = mode_with_priority(subset.dropna(), priority_categories)
+        
+        # Print debugging information
+        print(f"Processing row {i}, interval {row['TIMESTAMP_INITIAL']} to {row['TIMESTAMP_FINAL']}")
+        print(f"Subset: {subset.dropna()}")
+        print(f"Most frequent object: {most_frequent_obj}")
+        
+        # Check if most_frequent_obj exists in the subset before finding the quadrant
+        if most_frequent_obj and most_frequent_obj in subset.values:
+            quadrant_row = df.loc[(df['NEW_SEMANTIC_OBJ_CLASS'] == most_frequent_obj) & mask, 'SEMANTIC_OBJ_QUADRANT']
+            if not quadrant_row.empty:
+                quadrant_mode = quadrant_row.mode()
+                quadrant = quadrant_mode.iloc[0] if not quadrant_mode.empty else None
+            else:
+                quadrant = None
+        else:
+            quadrant = None
+        
+        # Assign the calculated mode and quadrant to the current row
+        df.at[i, 'MODE_NEW_SEMANTIC_OBJECT_CLASS'] = most_frequent_obj
+        df.at[i, 'MODE_NEW_SEMANTIC_OBJECT_QUADRANT'] = quadrant
+        
+        # Print debugging information
+        print(f"Quadrant row: {quadrant_row}")
+        print(f"Assigned quadrant: {quadrant}")
+
+# Save the modified dataframe to a new Excel file
+output_file_path = '/mnt/data/TOTAL_acquisition_results_Updated.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print(f"Output file saved to: {output_file_path}")
