@@ -1,0 +1,16 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'path_to_your_file/TOTAL_acquisition_results_Copy_2.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Create a new column "Glance_Type" based on the "GLANCE_DURATION_milliseconds" values
+df['Glance_Type'] = df['GLANCE_DURATION_milliseconds'].apply(
+    lambda x: 'Fixation' if 150 <= x <= 700 else ('Saccade' if x < 150 else ('Long' if x > 700 else None))
+)
+
+# Save the modified dataframe to a new Excel file
+output_file_path = 'path_to_your_file/TOTAL_acquisition_results_Modified.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print("The modified file has been saved to:", output_file_path)
