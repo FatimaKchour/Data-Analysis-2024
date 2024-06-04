@@ -1,0 +1,92 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = '/mnt/data/TOTAL_acquisition_results_Copy_6.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Function to calculate average shape values within a timestamp interval
+def calculate_average_shapes(df):
+    shape_columns = [
+        "Shape_road", "Shape_sidewalk", "Shape_building", "Shape_wall", "Shape_fence", 
+        "Shape_pole", "Shape_traffic light", "Shape_traffic sign", "Shape_vegetation", 
+        "Shape_terrain", "Shape_sky", "Shape_person", "Shape_rider", "Shape_car", 
+        "Shape_truck", "Shape_bus", "Shape_train", "Shape_motorcycle", "Shape_bicycle"
+    ]
+    
+    # Add new columns for average shapes immediately after their corresponding shape columns
+    for col in shape_columns:
+        df.insert(df.columns.get_loc(col) + 1, f"AVERAGE_{col}", "")
+    
+    # Group by TIMESTAMP_INITIAL and TIMESTAMP_FINAL and process each group
+    grouped = df.groupby(['TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL'])
+    
+    for name, group in grouped:
+        timestamp_initial, timestamp_final = name
+        if not group['GLANCE_DURATION_seconds'].isna().all():
+            for col in shape_columns:
+                avg_value = group[col].mean()
+                df.loc[group.index[0], f"AVERAGE_{col}"] = avg_value
+                # Leave subsequent rows blank
+                df.loc[group.index[1:], f"AVERAGE_{col}"] = ""
+                
+    return df
+
+# Function to process rows outside the interval
+def fill_outside_interval(df):
+    shape_columns = [
+        "Shape_road", "Shape_sidewalk", "Shape_building", "Shape_wall", "Shape_fence", 
+        "Shape_pole", "Shape_traffic light", "Shape_traffic sign", "Shape_vegetation", 
+        "Shape_terrain", "Shape_sky", "Shape_person", "Shape_rider", "Shape_car", 
+        "Shape_truck", "Shape_bus", "Shape_train", "Shape_motorcycle", "Shape_bicycle"
+    ]
+    
+    for col in shape_columns:
+        avg_col = f"AVERAGE_{col}"
+        # If GLANCE_DURATION_seconds and other specified columns are blank, copy Shape_<object> to AVERAGE_<Shape_object>
+        mask = df[['GLANCE_DURATION_seconds', 'GLANCE_DURATION_milliseconds', 'TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'Glance_Type']].isna().all(axis=1)
+        df.loc[mask, avg_col] = df.loc[mask, col]
+    
+    return df
+
+# Apply the functions to the dataframe, skipping rows with blank GAZE_CLASS
+def process_dataframe(df):
+    shape_columns = [
+        "Shape_road", "Shape_sidewalk", "Shape_building", "Shape_wall", "Shape_fence", 
+        "Shape_pole", "Shape_traffic light", "Shape_traffic sign", "Shape_vegetation", 
+        "Shape_terrain", "Shape_sky", "Shape_person", "Shape_rider", "Shape_car", 
+        "Shape_truck", "Shape_bus", "Shape_train", "Shape_motorcycle", "Shape_bicycle"
+    ]
+
+    # Add new columns for average shapes immediately after their corresponding shape columns
+    for col in shape_columns:
+        df.insert(df.columns.get_loc(col) + 1, f"AVERAGE_{col}", "")
+
+    # Iterate through each row
+    for i in range(len(df)):
+        if pd.isna(df.at[i, 'GAZE_CLASS']):
+            continue
+        
+        timestamp_initial = df.at[i, 'TIMESTAMP_INITIAL']
+        timestamp_final = df.at[i, 'TIMESTAMP_FINAL']
+        
+        interval_mask = (df['TIMESTAMP_INITIAL'] == timestamp_initial) & (df['TIMESTAMP_FINAL'] == timestamp_final)
+        interval_rows = df[interval_mask]
+        
+        if not interval_rows['GLANCE_DURATION_seconds'].isna().all():
+            for col in shape_columns:
+                avg_value = interval_rows[col].mean()
+                df.loc[interval_rows.index[0], f"AVERAGE_{col}"] = avg_value
+                # Leave subsequent rows blank
+                df.loc[interval_rows.index[1:], f"AVERAGE_{col}"] = ""
+    
+    return df
+
+# Apply the function to the dataframe
+df = process_dataframe(df)
+df = fill_outside_interval(df)
+
+# Save the modified dataframe to a new Excel file
+output_file_path = '/mnt/data/Modified_acquisition_results_fixed_v2.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print(f"Modified file saved to {output_file_path}")
