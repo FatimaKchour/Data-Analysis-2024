@@ -1,0 +1,65 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'path_to_your_file.xlsx'  # Replace with your actual file path
+data = pd.read_excel(file_path)
+
+# List of scene object columns
+scene_objects = [
+    "Scene_road", "Scene_sidewalk", "Scene_building", "Scene_wall", 
+    "Scene_fence", "Scene_pole", "Scene_traffic light", "Scene_traffic sign", 
+    "Scene_vegetation", "Scene_terrain", "Scene_sky", "Scene_person", 
+    "Scene_rider", "Scene_car", "Scene_truck", "Scene_bus", "Scene_train", 
+    "Scene_motorcycle", "Scene_bicycle"
+]
+
+# Initialize binary columns for each scene object
+for scene_object in scene_objects:
+    binary_column = f"BINARY_{scene_object}"
+    data.insert(data.columns.get_loc(scene_object) + 1, binary_column, None)
+
+# Function to set binary values
+def set_binary_values():
+    for index, row in data.iterrows():
+        if pd.notnull(row['TIMESTAMP_INITIAL']) and pd.notnull(row['TIMESTAMP_FINAL']):
+            initial_timestamp = row['TIMESTAMP_INITIAL']
+            final_timestamp = row['TIMESTAMP_FINAL']
+            for scene_object in scene_objects:
+                binary_column = f"BINARY_{scene_object}"
+                interval_data = data[(data['TIMESTAMP'] >= initial_timestamp) & (data['TIMESTAMP'] <= final_timestamp)]
+                scene_values = interval_data[scene_object]
+                if (scene_values != 0).any():
+                    data.at[index, binary_column] = 1
+                else:
+                    data.at[index, binary_column] = 0
+        elif pd.isnull(row['GLANCE_DURATION_seconds']):
+            for scene_object in scene_objects:
+                binary_column = f"BINARY_{scene_object}"
+                if row[scene_object] != 0:
+                    data.at[index, binary_column] = 1
+                else:
+                    data.at[index, binary_column] = 0
+
+# Apply the function to set binary values
+set_binary_values()
+
+# Remove binary values from subsequent rows within the intervals
+for index, row in data.iterrows():
+    if pd.notnull(row['TIMESTAMP_INITIAL']) and pd.notnull(row['TIMESTAMP_FINAL']):
+        initial_timestamp = row['TIMESTAMP_INITIAL']
+        final_timestamp = row['TIMESTAMP_FINAL']
+        interval_data = data[(data['TIMESTAMP'] > initial_timestamp) & (data['TIMESTAMP'] <= final_timestamp)]
+        for scene_object in scene_objects:
+            binary_column = f"BINARY_{scene_object}"
+            data.loc[interval_data.index, binary_column] = None
+
+# Replace all 0 values with blank values if GAZE_CLASS is blank
+for index, row in data.iterrows():
+    if pd.isnull(row['GAZE_CLASS']):
+        data.loc[index] = data.loc[index].replace(0, None)
+
+# Save the updated dataframe to a new Excel file
+updated_file_path = 'updated_TOTAL_acquisition_results.xlsx'
+data.to_excel(updated_file_path, index=False)
+
+print("The updated DataFrame has been saved to 'updated_TOTAL_acquisition_results.xlsx'.")
