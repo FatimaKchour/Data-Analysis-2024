@@ -1,0 +1,45 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'path_to_your_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
+
+# Check if the column 'MODE_NEW_SEMANTIC_OBJECT_CLASS' exists
+if 'MODE_NEW_SEMANTIC_OBJECT_CLASS' in df.columns:
+    # Insert a new column 'ID_MODE_NEW_SEMANTIC_OBJECT_CLASS' after 'MODE_NEW_SEMANTIC_OBJECT_CLASS'
+    col_index = df.columns.get_loc('MODE_NEW_SEMANTIC_OBJECT_CLASS') + 1
+    df.insert(col_index, 'ID_MODE_NEW_SEMANTIC_OBJECT_CLASS', None)
+
+    # Define the mapping dictionary
+    mapping = {
+        'person': 1,
+        'truck': 2,
+        'bus': 3,
+        'motorcycle': 4,
+        'car': 5,
+        'rider': 6,
+        'bicycle': 7,
+        'train': 8,
+        'building': 9,
+        'wall': 10,
+        'fence': 11,
+        'pole': 12,
+        'vegetation': 13,
+        'road': 14,
+        'sidewalk': 15,
+        'sky': 16,
+        'terrain': 17,
+        'traffic light': 18,
+        'traffic sign': 19
+    }
+
+    # Apply the mapping to the new column
+    df['ID_MODE_NEW_SEMANTIC_OBJECT_CLASS'] = df['MODE_NEW_SEMANTIC_OBJECT_CLASS'].map(mapping)
+
+    # Save the updated dataframe to a new Excel file
+    output_path = 'updated_TOTAL_acquisition_results.xlsx'  # Replace with the desired output file path
+    df.to_excel(output_path, index=False)
+else:
+    print("The column 'MODE_NEW_SEMANTIC_OBJECT_CLASS' does not exist in the provided Excel file.")
+
+print("Processing complete. The updated file has been saved.")
