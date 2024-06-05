@@ -1,92 +1,58 @@
 import pandas as pd
+import numpy as np
 
 # Load the Excel file
-file_path = '/mnt/data/TOTAL_acquisition_results_Copy_6.xlsx'
+file_path = 'YOUR_FILE_PATH.xlsx'  # Replace with the actual file path
 df = pd.read_excel(file_path, sheet_name='Sheet1')
 
-# Function to calculate average shape values within a timestamp interval
-def calculate_average_shapes(df):
-    shape_columns = [
-        "Shape_road", "Shape_sidewalk", "Shape_building", "Shape_wall", "Shape_fence", 
-        "Shape_pole", "Shape_traffic light", "Shape_traffic sign", "Shape_vegetation", 
-        "Shape_terrain", "Shape_sky", "Shape_person", "Shape_rider", "Shape_car", 
-        "Shape_truck", "Shape_bus", "Shape_train", "Shape_motorcycle", "Shape_bicycle"
-    ]
+# Define the columns we are interested in
+shape_columns = [col for col in df.columns if col.startswith('Shape_')]
+
+# Initialize the new dataframe to include the new columns for average values
+new_df = df.copy()
+
+# Placeholder for new columns
+new_columns = new_df.columns.tolist()
+
+# Add new columns for the averages with a dtype of object to avoid dtype issues, and place them immediately after the corresponding shape columns
+for col in shape_columns:
+    new_col = f"Average_{col}"
+    new_df[new_col] = np.nan
+    new_df[new_col] = new_df[new_col].astype(object)
+    # Find the position to insert the new column
+    col_index = new_columns.index(col) + 1
+    new_columns.insert(col_index, new_col)
+
+# Reorder columns before filling data to avoid issues
+new_df = new_df[new_columns]
+
+# Iterate through each interval defined by TIMESTAMP_INITIAL and TIMESTAMP_FINAL
+intervals = df[['TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL']].drop_duplicates().reset_index(drop=True)
+
+for index, row in intervals.iterrows():
+    initial_timestamp = row['TIMESTAMP_INITIAL']
+    final_timestamp = row['TIMESTAMP_FINAL']
     
-    # Add new columns for average shapes immediately after their corresponding shape columns
+    # Identify the rows within the current interval
+    interval_mask = (df['TIMESTAMP'] >= initial_timestamp) & (df['TIMESTAMP'] <= final_timestamp)
+    interval_indices = df[interval_mask].index
+    
+    # Calculate the averages for each shape column
     for col in shape_columns:
-        df.insert(df.columns.get_loc(col) + 1, f"AVERAGE_{col}", "")
-    
-    # Group by TIMESTAMP_INITIAL and TIMESTAMP_FINAL and process each group
-    grouped = df.groupby(['TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL'])
-    
-    for name, group in grouped:
-        timestamp_initial, timestamp_final = name
-        if not group['GLANCE_DURATION_seconds'].isna().all():
-            for col in shape_columns:
-                avg_value = group[col].mean()
-                df.loc[group.index[0], f"AVERAGE_{col}"] = avg_value
-                # Leave subsequent rows blank
-                df.loc[group.index[1:], f"AVERAGE_{col}"] = ""
-                
-    return df
+        average_value = df.loc[interval_indices, col].mean()
+        if not interval_indices.empty:
+            first_index = interval_indices[0]
+            new_df.loc[first_index, f"Average_{col}"] = average_value
+            new_df.loc[interval_indices[1:], f"Average_{col}"] = ""  # Fill subsequent rows with blank values
 
-# Function to process rows outside the interval
-def fill_outside_interval(df):
-    shape_columns = [
-        "Shape_road", "Shape_sidewalk", "Shape_building", "Shape_wall", "Shape_fence", 
-        "Shape_pole", "Shape_traffic light", "Shape_traffic sign", "Shape_vegetation", 
-        "Shape_terrain", "Shape_sky", "Shape_person", "Shape_rider", "Shape_car", 
-        "Shape_truck", "Shape_bus", "Shape_train", "Shape_motorcycle", "Shape_bicycle"
-    ]
-    
-    for col in shape_columns:
-        avg_col = f"AVERAGE_{col}"
-        # If GLANCE_DURATION_seconds and other specified columns are blank, copy Shape_<object> to AVERAGE_<Shape_object>
-        mask = df[['GLANCE_DURATION_seconds', 'GLANCE_DURATION_milliseconds', 'TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'Glance_Type']].isna().all(axis=1)
-        df.loc[mask, avg_col] = df.loc[mask, col]
-    
-    return df
+# Handling single-line values for GAZE_CLASS
+for i in range(len(df)):
+    if (i == 0 or df.loc[i, 'GAZE_CLASS'] != df.loc[i-1, 'GAZE_CLASS']) and (i == len(df)-1 or df.loc[i, 'GAZE_CLASS'] != df.loc[i+1, 'GAZE_CLASS']):
+        for col in shape_columns:
+            new_df.loc[i, f"Average_{col}"] = df.loc[i, col]
 
-# Apply the functions to the dataframe, skipping rows with blank GAZE_CLASS
-def process_dataframe(df):
-    shape_columns = [
-        "Shape_road", "Shape_sidewalk", "Shape_building", "Shape_wall", "Shape_fence", 
-        "Shape_pole", "Shape_traffic light", "Shape_traffic sign", "Shape_vegetation", 
-        "Shape_terrain", "Shape_sky", "Shape_person", "Shape_rider", "Shape_car", 
-        "Shape_truck", "Shape_bus", "Shape_train", "Shape_motorcycle", "Shape_bicycle"
-    ]
+# Save the updated dataframe to a new Excel file
+output_file_path = 'YOUR_OUTPUT_FILE_PATH.xlsx'  # Replace with the desired output file path
+new_df.to_excel(output_file_path, index=False)
 
-    # Add new columns for average shapes immediately after their corresponding shape columns
-    for col in shape_columns:
-        df.insert(df.columns.get_loc(col) + 1, f"AVERAGE_{col}", "")
-
-    # Iterate through each row
-    for i in range(len(df)):
-        if pd.isna(df.at[i, 'GAZE_CLASS']):
-            continue
-        
-        timestamp_initial = df.at[i, 'TIMESTAMP_INITIAL']
-        timestamp_final = df.at[i, 'TIMESTAMP_FINAL']
-        
-        interval_mask = (df['TIMESTAMP_INITIAL'] == timestamp_initial) & (df['TIMESTAMP_FINAL'] == timestamp_final)
-        interval_rows = df[interval_mask]
-        
-        if not interval_rows['GLANCE_DURATION_seconds'].isna().all():
-            for col in shape_columns:
-                avg_value = interval_rows[col].mean()
-                df.loc[interval_rows.index[0], f"AVERAGE_{col}"] = avg_value
-                # Leave subsequent rows blank
-                df.loc[interval_rows.index[1:], f"AVERAGE_{col}"] = ""
-    
-    return df
-
-# Apply the function to the dataframe
-df = process_dataframe(df)
-df = fill_outside_interval(df)
-
-# Save the modified dataframe to a new Excel file
-output_file_path = '/mnt/data/Modified_acquisition_results_fixed_v2.xlsx'
-df.to_excel(output_file_path, index=False)
-
-print(f"Modified file saved to {output_file_path}")
+print("Task completed successfully.")
