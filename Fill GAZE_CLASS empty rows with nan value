@@ -1,0 +1,17 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'path_to_your_file.xlsx'  # Replace with the path to your Excel file
+sheet_name = 'Sheet1'
+
+# Read the Excel file
+df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+# Fill empty rows in the "GAZE_CLASS" column with "nan"
+df['GAZE_CLASS'] = df['GAZE_CLASS'].fillna('nan')
+
+# Save the modified dataframe to a new Excel file
+output_file_path = 'path_to_save_modified_file.xlsx'  # Replace with the path to save the modified file
+df.to_excel(output_file_path, index=False)
+
+print(f'Modified file saved to {output_file_path}')
