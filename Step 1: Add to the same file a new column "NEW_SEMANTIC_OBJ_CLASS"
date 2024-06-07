@@ -1,0 +1,25 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'TOTAL_acquisition_results.xlsx'
+sheet_name = 'Module2'  # Change to the correct sheet name
+
+# Read the Excel file
+df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+# Replace 'nan' in SEMANTIC_OBJ_CLASS with values from GAZE_CLASS
+df['NEW_SEMANTIC_OBJ_CLASS'] = df.apply(
+    lambda row: row['GAZE_CLASS'] if pd.isna(row['SEMANTIC_OBJ_CLASS']) else row['SEMANTIC_OBJ_CLASS'], axis=1
+)
+
+# Find the position of 'SEMANTIC_OBJ_CLASS' column and insert 'NEW_SEMANTIC_OBJ_CLASS' immediately after it
+semantic_obj_class_index = df.columns.get_loc('SEMANTIC_OBJ_CLASS')
+columns = list(df.columns)
+columns.insert(semantic_obj_class_index + 1, columns.pop(columns.index('NEW_SEMANTIC_OBJ_CLASS')))
+df = df[columns]
+
+# Save the updated dataframe back to the Excel file
+with pd.ExcelWriter(file_path, mode='a', if_sheet_exists='replace') as writer:
+    df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+print("Task completed successfully.")
