@@ -47,11 +47,13 @@ if 'ID_NEW_SEMANTIC_OBJ_CLASS' not in df.columns:
 if 'NEW_SEMANTIC_OBJ_CLASS' in df.columns:
     new_semantic_obj_class_index = df.columns.get_loc('NEW_SEMANTIC_OBJ_CLASS')
     columns = list(df.columns)
-    columns.insert(new_semantic_obj_class_index + 1, columns.pop(columns.index('ID_NEW_SEMANTIC_OBJ_CLASS')))
+    if 'ID_NEW_SEMANTIC_OBJ_CLASS' in columns:
+        columns.remove('ID_NEW_SEMANTIC_OBJ_CLASS')
+    columns.insert(new_semantic_obj_class_index + 1, 'ID_NEW_SEMANTIC_OBJ_CLASS')
     df = df[columns]
 
 # Save the updated dataframe to a new Excel file
-output_file_path = 'TOTAL_acquisition_results_Updated.xlsx'
+output_file_path = '/mnt/data/TOTAL_acquisition_results_Updated.xlsx'
 with pd.ExcelWriter(output_file_path, mode='w') as writer:
     df.to_excel(writer, sheet_name=sheet_name, index=False)
 
