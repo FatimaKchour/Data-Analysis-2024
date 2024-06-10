@@ -1,0 +1,34 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'TOTAL_acquisition_results_NewApproach_5.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Function to find and fill missing IDs
+def fill_missing_ids(df):
+    # Get the range of IDs from the minimum to the maximum
+    id_range = range(df['ID'].min(), df['ID'].max() + 1)
+    # Find the missing IDs by comparing the existing IDs with the range
+    missing_ids = set(id_range) - set(df['ID'])
+    
+    # Create a dataframe for missing IDs with the same columns but NaN values
+    missing_df = pd.DataFrame({
+        'ID': list(missing_ids)
+    })
+    
+    # Merge the original dataframe with the missing IDs dataframe
+    df = pd.concat([df, missing_df], ignore_index=True)
+    
+    # Sort by ID to ensure the new rows are in the correct order
+    df = df.sort_values(by='ID').reset_index(drop=True)
+    
+    return df
+
+# Fill the missing IDs
+df_filled = fill_missing_ids(df)
+
+# Save the updated dataframe back to an Excel file
+output_file_path = 'TOTAL_acquisition_results_NewApproach_5_filled.xlsx'
+df_filled.to_excel(output_file_path, index=False)
+
+print(f"Updated file saved to {output_file_path}")
