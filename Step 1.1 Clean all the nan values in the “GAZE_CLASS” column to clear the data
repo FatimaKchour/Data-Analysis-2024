@@ -1,0 +1,14 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'path/to/TOTAL_acquisition_results_NewApproach_2.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Remove rows where 'GAZE_CLASS' is blank
+df_cleaned = df.dropna(subset=['GAZE_CLASS'])
+
+# Save the cleaned dataframe back to an Excel file
+cleaned_file_path = 'path/to/TOTAL_acquisition_results_NewApproach_2_cleaned.xlsx'
+df_cleaned.to_excel(cleaned_file_path, index=False)
+
+print("Cleaned file saved at:", cleaned_file_path)
