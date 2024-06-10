@@ -1,0 +1,30 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = '/mnt/data/TOTAL_acquisition_results_NewApproach_3.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Selecting relevant columns for the task
+columns_of_interest = [
+    "TIMESTAMP_INITIAL",
+    "TIMESTAMP_FINAL",
+    "GLANCE_DURATION",
+    "GLANCE_DURATION_milliseconds",
+    "Glance_Type"
+]
+
+# Extracting the relevant columns
+df_relevant = df[columns_of_interest]
+
+# Filling NaN values within each interval
+df_relevant = df_relevant.ffill()
+
+# Updating the original dataframe with the filled values for only the specified columns
+for column in columns_of_interest:
+    df[column] = df_relevant[column]
+
+# Saving the updated dataframe back to an Excel file
+output_file_path = '/mnt/data/Updated_acquisition_results.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print(f"Updated dataframe saved to {output_file_path}")
