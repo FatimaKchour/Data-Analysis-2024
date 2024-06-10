@@ -1,0 +1,18 @@
+import pandas as pd
+
+# Load the updated Excel file
+file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH/TOTAL_acquisition_results_NewApproach_4.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Define the new column "ID_Glance"
+df['ID_Glance'] = df['Glance_Type'].map({'Saccade': 0, 'Fixation': 1, 'Long': 2})
+
+# Insert the new column immediately after the "Glance_Type" column
+glance_type_index = df.columns.get_loc("Glance_Type") + 1
+df.insert(glance_type_index, 'ID_Glance', df.pop('ID_Glance'))
+
+# Save the updated dataframe to a new Excel file
+output_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH/TOTAL_acquisition_results_NewApproach_5.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print(f"Updated dataframe saved to {output_file_path}")
