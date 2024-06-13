@@ -1,0 +1,26 @@
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Load the gaze positions data
+file_path = 'C:/Users/user/Desktop/PNRR/2024-05-03-11-58-15/exports/000/gaze_positions.csv'  # Update this path to your actual file path
+gaze_positions_df = pd.read_csv(file_path)
+
+# Exact start time and Unix timestamp provided
+exact_start_time_str = "2024-05-03 11:58:03.358615"
+exact_start_time = datetime.strptime(exact_start_time_str, "%Y-%m-%d %H:%M:%S.%f")
+exact_start_unix_timestamp = 1714737483.358615
+
+# Function to calculate Unix timestamp for each gaze position
+def calculate_unix_timestamp(gaze_timestamp):
+    return exact_start_unix_timestamp + gaze_timestamp
+
+# Add a new column with Unix timestamps for each gaze position
+gaze_positions_df['unix_timestamp'] = gaze_positions_df['gaze_timestamp'].apply(calculate_unix_timestamp)
+
+# Define the output file path
+output_file_path = 'C:/Users/user/Desktop/PNRR/2024-05-03-11-58-15/exports/000/gaze_positions_with_unix_timestamps.csv'  # Update this path to your desired output file path
+
+# Save the dataframe with the new column to a CSV file
+gaze_positions_df.to_csv(output_file_path, index=False)
+
+print(f"Gaze positions with Unix timestamps have been saved to {output_file_path}")
