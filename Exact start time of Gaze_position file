@@ -1,0 +1,35 @@
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Load the gaze positions data
+file_path = 'C:/Users/user/Desktop/PNRR/2024-05-03-11-58-15/exports/000/gaze_positions.csv'  # Update this path to your actual file path
+gaze_positions_df = pd.read_csv(file_path)
+
+# Define the known start time without seconds and milliseconds
+known_start_time_str = "2024-05-03 11:58:00"
+
+# Find the minimum gaze timestamp to get the exact start time
+min_gaze_timestamp = gaze_positions_df['gaze_timestamp'].min()
+
+# Convert the known start time to a datetime object
+known_start_time = datetime.strptime(known_start_time_str, "%Y-%m-%d %H:%M:%S")
+
+# Add the minimum gaze timestamp to the known start time to get the exact start time
+exact_start_time = known_start_time + timedelta(seconds=min_gaze_timestamp)
+
+# Convert the exact start time to a Unix timestamp
+exact_start_unix_timestamp = exact_start_time.timestamp()
+
+# Define the output file path
+output_file_path = 'C:/Users/user/Desktop/PNRR/2024-05-03-11-58-15/exports/000/exact_start_time_gaze_positions.csv'  # Update this path to your desired output file path
+
+# Create a dataframe with the exact start time and Unix timestamp
+output_df = pd.DataFrame({
+    'exact_start_time': [exact_start_time],
+    'unix_timestamp': [exact_start_unix_timestamp]
+})
+
+# Save the dataframe to a new CSV file
+output_df.to_csv(output_file_path, index=False)
+
+print(f"Exact start time and Unix timestamp have been saved to {output_file_path}")
