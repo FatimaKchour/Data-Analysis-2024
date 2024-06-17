@@ -1,0 +1,23 @@
+import pandas as pd
+import datetime
+
+# Function to convert Unix epoch timestamp to date time format
+def epoch_to_datetime(epoch_timestamp):
+    datetime_obj = datetime.datetime.fromtimestamp(epoch_timestamp)
+    return datetime_obj.strftime('%d-%m-%Y %H:%M:%S:%f')
+
+# Read the Excel file
+input_excel_file = 'C:/Users/user/Desktop/PNRR/New folder/2024-05-03-11-58-15/all_raw_data_exports/gaze.xlsx'
+df = pd.read_excel(input_excel_file)
+
+# Insert the new column 'timestamp [s]' after 'timestamp [ns]'
+df.insert(df.columns.get_loc('timestamp [ns]') + 1, 'timestamp [s]', df['timestamp [ns]'] / 1e9)
+
+# Insert the new column 'date_time_format' after 'timestamp [s]'
+df.insert(df.columns.get_loc('timestamp [s]') + 1, 'date_time_format', df['timestamp [s]'].apply(epoch_to_datetime))
+
+# Write the result to a new Excel file
+output_excel_file = 'C:/Users/user/Desktop/PNRR/New folder/2024-05-03-11-58-15/all_raw_data_exports/gaze_1.xlsx'
+df.to_excel(output_excel_file, index=False)
+
+print(f"The new Excel file '{output_excel_file}' has been created with the converted date time format.")
