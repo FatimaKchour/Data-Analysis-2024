@@ -1,0 +1,38 @@
+import cv2
+import os
+import re
+
+def frames_to_video(directory, output_video_path, fps=30):
+    # Ensure the output directory exists
+    os.makedirs(os.path.dirname(output_video_path), exist_ok=True)
+    
+    # Get a list of all image files in the directory
+    files = [f for f in os.listdir(directory) if f.endswith('.png')]
+    
+    # Sort files by their numeric ID
+    files.sort(key=lambda x: int(re.search(r'\d+', x).group()))
+
+    # Read the first file to get the frame size
+    first_frame = cv2.imread(os.path.join(directory, files[0]))
+    height, width, layers = first_frame.shape
+
+    # Define the codec and create a VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # For .mp4 files
+    out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
+
+    for file in files:
+        frame = cv2.imread(os.path.join(directory, file))
+        out.write(frame)  # Write the frame to the video
+
+    # Release the VideoWriter
+    out.release()
+    print(f'Video saved as {output_video_path}')
+
+# Directory containing the frames
+directory = 'C:/Users/user/Desktop/PNRR/2024_05_03_pupils_frames'  # Update this with the actual path to your directory
+
+# Output video path
+output_video_path = 'C:/Users/user/Desktop/PNRR/output_video.mp4'  # Update this with the desired output path
+
+# Convert frames to video
+frames_to_video(directory, output_video_path, fps=30)
