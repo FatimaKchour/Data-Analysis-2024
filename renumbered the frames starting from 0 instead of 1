@@ -1,0 +1,24 @@
+import os
+import re
+
+def renumber_and_rename_frames(directory):
+    # Get a list of all image files in the directory
+    files = [f for f in os.listdir(directory) if f.endswith('.png')]
+    
+    # Sort files by their numeric ID extracted from the filename
+    files.sort(key=lambda x: int(re.search(r'\d+', x).group()))
+
+    # Rename each file starting from 0
+    for i, filename in enumerate(files):
+        base_name = '2024_05_03_pupils_frames_'
+        new_name = f"{base_name}{i:05d}.png"
+        old_path = os.path.join(directory, filename)
+        new_path = os.path.join(directory, new_name)
+        os.rename(old_path, new_path)
+        print(f'Renamed {filename} to {new_name}')
+
+# Specify the directory containing the PNG frames
+directory = 'C:/Users/user/Desktop/PNRR/2024_05_03_pupils_frames'  # Update this with the actual path to your directory
+
+# Call the function to renumber and rename frames
+renumber_and_rename_frames(directory)
