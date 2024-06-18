@@ -1,0 +1,11 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'C:/Users/user/Desktop/PNRR/2024_05_03_export_github/2024-05-03-11-58-15/all_raw_data_exports/world_1.xlsx'
+df = pd.read_excel(file_path)
+
+# Convert Unix timestamp in seconds to datetime format in UTC+0 and remove timezone information
+df['date_time_format'] = pd.to_datetime(df['timestamp [s]'], unit='s', utc=True).dt.tz_localize(None)
+
+# Save the results in the same file
+df.to_excel(file_path, index=False)
