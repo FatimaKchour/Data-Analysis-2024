@@ -1,0 +1,26 @@
+import pandas as pd
+
+# Load the updated Excel file
+file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_8.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Skip processing for rows where GAZE_CLASS is blank
+# Instead of removing rows, we will only skip calculations and additions for these rows
+
+# Create a new DataFrame to hold the updated data
+updated_df = df.copy()
+
+# Define the new column "ID_Glance"
+updated_df['ID_Glance'] = updated_df['Glance_Type'].apply(
+    lambda x: {'Saccade': 0, 'Fixation': 1, 'Long': 2}.get(x, pd.NA) if pd.notna(x) else pd.NA
+)
+
+# Insert the new column immediately after the "Glance_Type" column
+glance_type_index = updated_df.columns.get_loc("Glance_Type") + 1
+updated_df.insert(glance_type_index, 'ID_Glance', updated_df.pop('ID_Glance'))
+
+# Save the updated dataframe to a new Excel file
+output_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_9.xlsx'
+updated_df.to_excel(output_file_path, index=False)
+
+print(f"Updated dataframe saved to {output_file_path}")
