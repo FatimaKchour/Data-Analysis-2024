@@ -1,0 +1,23 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_7.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Extracting relevant columns
+df_relevant = df[['GAZE_CLASS', 'TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'GLANCE_DURATION', 'Glance_Type']]
+
+# Skip rows where GAZE_CLASS is blank
+df_relevant = df_relevant[df_relevant['GAZE_CLASS'].notna()]
+
+# Forward filling the NaN values within each interval (excluding GAZE_CLASS)
+df_relevant[['TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'GLANCE_DURATION', 'Glance_Type']] = df_relevant[['TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'GLANCE_DURATION', 'Glance_Type']].ffill()
+
+# Merging the filled columns back into the original dataframe
+df.update(df_relevant)
+
+# Saving the updated dataframe to a new Excel file
+output_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_8.xlsx'
+df.to_excel(output_path, index=False)
+
+print("The modified file has been saved to:", output_path)
