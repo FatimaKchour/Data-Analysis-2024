@@ -20,7 +20,7 @@ for column in df.columns:
     new_columns_order.append(column)
     if column in columns:
         binary_column = f'Binary_{column}'
-        df[binary_column] = df[column].apply(lambda x: 1 if pd.notna(x) and x != 0 else 0)
+        df[binary_column] = df.apply(lambda row: 1 if pd.notna(row[column]) and row[column] != 0 and pd.notna(row['GAZE_CLASS']) else 0, axis=1)
         new_columns_order.append(binary_column)
 
 # Reorder the DataFrame columns
