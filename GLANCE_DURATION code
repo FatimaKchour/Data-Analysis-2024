@@ -4,11 +4,25 @@ import pandas as pd
 file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_2.xlsx'
 df = pd.read_excel(file_path)
 
+# Initialize the new columns
+df['GLANCE_DURATION'] = pd.NA
+df['TIMESTAMP_INITIAL'] = pd.NA
+df['TIMESTAMP_FINAL'] = pd.NA
+
+# Insert the new columns immediately after ID_GAZE_CLASS
+gaze_class_index = df.columns.get_loc('ID_GAZE_CLASS')
+columns = list(df.columns)
+columns.insert(gaze_class_index + 1, columns.pop(columns.index('GLANCE_DURATION')))
+columns.insert(gaze_class_index + 2, columns.pop(columns.index('TIMESTAMP_INITIAL')))
+columns.insert(gaze_class_index + 3, columns.pop(columns.index('TIMESTAMP_FINAL')))
+df = df[columns]
+
 # Initialize variables to track the current gaze class and timestamps
 current_gaze_class = None
 first_timestamp = None
 last_timestamp = None
 start_index = None
+repeated = False
 
 # Iterate through the dataframe
 for index, row in df.iterrows():
@@ -16,26 +30,42 @@ for index, row in df.iterrows():
     
     if pd.notna(gaze_class):  # Proceed only if GAZE_CLASS is not empty
         if gaze_class != current_gaze_class:
-            # If this is a new gaze class, calculate the previous duration if applicable and if repeated
-            if current_gaze_class is not None and start_index is not None and first_timestamp != last_timestamp:
+            # If this is a new gaze class and the previous was repeated, calculate the previous duration
+            if current_gaze_class is not None and start_index is not None and repeated:
                 glance_duration = last_timestamp - first_timestamp
-                
                 df.at[start_index, 'GLANCE_DURATION'] = glance_duration
                 df.at[start_index, 'TIMESTAMP_INITIAL'] = first_timestamp
                 df.at[start_index, 'TIMESTAMP_FINAL'] = last_timestamp
-            
+
             # Update the current gaze class and initialize timestamps
             current_gaze_class = gaze_class
             first_timestamp = row['TIMESTAMP']
             start_index = index
-        
+            repeated = False
+        else:
+            # Mark as repeated if we encounter the same gaze class again
+            repeated = True
+
         # Update the last timestamp for the current gaze class
         last_timestamp = row['TIMESTAMP']
+    else:
+        # If GAZE_CLASS is nan and previous gaze class was repeated, calculate the previous duration
+        if current_gaze_class is not None and start_index is not None and repeated:
+            glance_duration = last_timestamp - first_timestamp
+            df.at[start_index, 'GLANCE_DURATION'] = glance_duration
+            df.at[start_index, 'TIMESTAMP_INITIAL'] = first_timestamp
+            df.at[start_index, 'TIMESTAMP_FINAL'] = last_timestamp
+        
+        # Reset tracking variables
+        current_gaze_class = None
+        first_timestamp = None
+        last_timestamp = None
+        start_index = None
+        repeated = False
 
 # Handle the last gaze class in the dataframe if it was repeated
-if current_gaze_class is not None and start_index is not None and first_timestamp != last_timestamp:
+if current_gaze_class is not None and start_index is not None and repeated:
     glance_duration = last_timestamp - first_timestamp
-    
     df.at[start_index, 'GLANCE_DURATION'] = glance_duration
     df.at[start_index, 'TIMESTAMP_INITIAL'] = first_timestamp
     df.at[start_index, 'TIMESTAMP_FINAL'] = last_timestamp
@@ -43,3 +73,5 @@ if current_gaze_class is not None and start_index is not None and first_timestam
 # Save the result dataframe to a new Excel file
 output_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_3.xlsx'
 df.to_excel(output_file_path, index=False)
+
+print(f"Updated file saved to {output_file_path}")
