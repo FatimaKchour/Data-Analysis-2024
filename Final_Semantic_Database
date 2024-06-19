@@ -6,7 +6,7 @@ df = pd.read_excel(file_path)
 
 # Define the columns to be included in the new Excel file
 columns = [
-    'ID','TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'GLANCE_DURATION_milliseconds', 'ID_Glance', 'ID_GAZE_CLASS', 
+    'ID','TIMESTAMP','TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'GLANCE_DURATION_milliseconds', 'ID_Glance', 'ID_GAZE_CLASS', 
     'GAZE_QUADRANT', 'ID_NEW_SEMANTIC_OBJ_CLASS', 'SEMANTIC_OBJ_QUADRANT', 'Binary_Scene_road', 
     'Binary_Scene_sidewalk', 'Binary_Scene_building', 'Binary_Scene_wall', 'Binary_Scene_fence', 
     'Binary_Scene_pole', 'Binary_Scene_traffic light', 'Binary_Scene_traffic sign', 'Binary_Scene_vegetation', 
