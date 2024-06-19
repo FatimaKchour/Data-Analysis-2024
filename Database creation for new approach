@@ -1,0 +1,31 @@
+import pandas as pd
+
+# Define the file path
+input_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_9.xlsx'
+output_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_10.xlsx'
+
+# Read the Excel file
+df = pd.read_excel(input_file_path)
+
+# Define the columns in the specified order
+columns_order = [
+    'ID', 'TIMESTAMP', 'TIMESTAMP_INITIAL', 'TIMESTAMP_FINAL', 'GLANCE_DURATION', 'ID_Glance', 
+    'ID_GAZE_CLASS', 'GAZE_QUADRANT', 'ID_NEW_SEMANTIC_OBJ_CLASS', 'SEMANTIC_OBJ_QUADRANT', 
+    'Binary_Scene_road', 'Binary_Scene_sidewalk', 'Binary_Scene_building', 'Binary_Scene_wall', 
+    'Binary_Scene_fence', 'Binary_Scene_pole', 'Binary_Scene_traffic light', 'Binary_Scene_traffic sign', 
+    'Binary_Scene_vegetation', 'Binary_Scene_terrain', 'Binary_Scene_sky', 'Binary_Scene_person', 
+    'Binary_Scene_rider', 'Binary_Scene_car', 'Binary_Scene_truck', 'Binary_Scene_bus', 
+    'Binary_Scene_train', 'Binary_Scene_motorcycle', 'Binary_Scene_bicycle', 'Shape_road', 
+    'Shape_sidewalk', 'Shape_building', 'Shape_wall', 'Shape_fence', 'Shape_pole', 
+    'Shape_traffic light', 'Shape_traffic sign', 'Shape_vegetation', 'Shape_terrain', 
+    'Shape_sky', 'Shape_person', 'Shape_rider', 'Shape_car', 'Shape_truck', 'Shape_bus', 
+    'Shape_train', 'Shape_motorcycle', 'Shape_bicycle'
+]
+
+# Reorder the DataFrame columns
+df_reordered = df[columns_order]
+
+# Save the reordered DataFrame to a new Excel file
+df_reordered.to_excel(output_file_path, index=False)
+
+print(f"Reordered data saved to {output_file_path}")
