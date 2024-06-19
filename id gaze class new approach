@@ -1,0 +1,60 @@
+import pandas as pd
+
+# Load the new Excel file
+file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_2.xlsx'
+sheet_name = 'Sheet1'
+
+# Read the Excel file
+df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+# Define the ID mapping
+id_mapping = {
+    'person': 1,
+    'truck': 2,
+    'bus': 3,
+    'motorcycle': 4,
+    'car': 5,
+    'rider': 6,
+    'bicycle': 7,
+    'train': 8,
+    'building': 9,
+    'wall': 10,
+    'fence': 11,
+    'pole': 12,
+    'vegetation': 13,
+    'road': 14,
+    'sidewalk': 15,
+    'sky': 16,
+    'terrain': 17,
+    'traffic light': 18,
+    'traffic sign': 19
+}
+
+# Create the ID_GAZE_CLASS column
+df['ID_GAZE_CLASS'] = df['GAZE_CLASS'].map(id_mapping)
+
+# Insert the ID_GAZE_CLASS column immediately after the GAZE_CLASS column
+gaze_class_index = df.columns.get_loc('GAZE_CLASS')
+columns = list(df.columns)
+columns.insert(gaze_class_index + 1, columns.pop(columns.index('ID_GAZE_CLASS')))
+df = df[columns]
+
+# Create the ID_NEW_SEMANTIC_OBJ_CLASS column if it does not already exist
+if 'ID_NEW_SEMANTIC_OBJ_CLASS' not in df.columns:
+    df['ID_NEW_SEMANTIC_OBJ_CLASS'] = df['NEW_SEMANTIC_OBJ_CLASS'].map(id_mapping)
+
+# Insert the ID_NEW_SEMANTIC_OBJ_CLASS column immediately after the NEW_SEMANTIC_OBJ_CLASS column
+if 'NEW_SEMANTIC_OBJ_CLASS' in df.columns:
+    new_semantic_obj_class_index = df.columns.get_loc('NEW_SEMANTIC_OBJ_CLASS')
+    columns = list(df.columns)
+    if 'ID_NEW_SEMANTIC_OBJ_CLASS' in columns:
+        columns.remove('ID_NEW_SEMANTIC_OBJ_CLASS')
+    columns.insert(new_semantic_obj_class_index + 1, 'ID_NEW_SEMANTIC_OBJ_CLASS')
+    df = df[columns]
+
+# Save the updated dataframe to a new Excel file
+output_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_3.xlsx'
+with pd.ExcelWriter(output_file_path, mode='w') as writer:
+    df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+print(f"Updated file saved to {output_file_path}")
