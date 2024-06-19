@@ -1,0 +1,45 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_2.xlsx'
+df = pd.read_excel(file_path)
+
+# Initialize variables to track the current gaze class and timestamps
+current_gaze_class = None
+first_timestamp = None
+last_timestamp = None
+start_index = None
+
+# Iterate through the dataframe
+for index, row in df.iterrows():
+    gaze_class = row['ID_GAZE_CLASS']
+    
+    if pd.notna(gaze_class):  # Proceed only if GAZE_CLASS is not empty
+        if gaze_class != current_gaze_class:
+            # If this is a new gaze class, calculate the previous duration if applicable and if repeated
+            if current_gaze_class is not None and start_index is not None and first_timestamp != last_timestamp:
+                glance_duration = last_timestamp - first_timestamp
+                
+                df.at[start_index, 'GLANCE_DURATION'] = glance_duration
+                df.at[start_index, 'TIMESTAMP_INITIAL'] = first_timestamp
+                df.at[start_index, 'TIMESTAMP_FINAL'] = last_timestamp
+            
+            # Update the current gaze class and initialize timestamps
+            current_gaze_class = gaze_class
+            first_timestamp = row['TIMESTAMP']
+            start_index = index
+        
+        # Update the last timestamp for the current gaze class
+        last_timestamp = row['TIMESTAMP']
+
+# Handle the last gaze class in the dataframe if it was repeated
+if current_gaze_class is not None and start_index is not None and first_timestamp != last_timestamp:
+    glance_duration = last_timestamp - first_timestamp
+    
+    df.at[start_index, 'GLANCE_DURATION'] = glance_duration
+    df.at[start_index, 'TIMESTAMP_INITIAL'] = first_timestamp
+    df.at[start_index, 'TIMESTAMP_FINAL'] = last_timestamp
+
+# Save the result dataframe to a new Excel file
+output_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_3.xlsx'
+df.to_excel(output_file_path, index=False)
