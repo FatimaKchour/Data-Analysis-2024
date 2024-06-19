@@ -1,0 +1,27 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH/Final_Database_user25.xlsx'
+xls = pd.ExcelFile(file_path)
+
+# Load the sheets into dataframes
+semantic_data = pd.read_excel(xls, 'Semantic_Data')
+eeg_data = pd.read_excel(xls, 'EEG_Data')
+
+# Merge the dataframes based on 'TIMESTAMP'
+merged_data = pd.merge(
+    semantic_data[['TIMESTAMP']],
+    eeg_data[['P Timestamp [ms]', 'meditation', 'attention', 'poorSignal', 'delta', 'theta', 'lowAlpha', 'highAlpha', 'lowBeta', 'highBeta', 'lowGamma', 'midGamma']],
+    left_on='TIMESTAMP',
+    right_on='P Timestamp [ms]',
+    how='left'
+)
+
+# Drop the 'P Timestamp [ms]' column as it is redundant now
+merged_data.drop(columns=['P Timestamp [ms]'], inplace=True)
+
+# Load the existing Excel file to write the new sheet
+with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+    merged_data.to_excel(writer, sheet_name='EEG_Data_2', index=False)
+
+print("Merged data written to 'EEG_Data_2' in the Excel file.")
