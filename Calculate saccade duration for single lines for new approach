@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load the Excel file
-file_path = '/mnt/data/TOTAL_acquisition_results_NewApproach_1.xlsx'
+file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_6.xlsx'
 df = pd.read_excel(file_path, sheet_name='Sheet1')
 
 # Define the column to be filled
@@ -13,23 +13,21 @@ for idx in range(len(df) - 1):
         continue
 
     if df.loc[idx, 'GAZE_CLASS'] != df.loc[idx + 1, 'GAZE_CLASS']:
-        if idx == 0 or df.loc[idx, 'OBJECT_FIXATED'] != df.loc[idx-1, 'OBJECT_FIXATED']:
+        if idx == 0 or df.loc[idx, 'ID_GAZE_CLASS'] != df.loc[idx-1, 'ID_GAZE_CLASS']:
             df.loc[idx, 'TIMESTAMP_INITIAL'] = df.loc[idx, 'TIMESTAMP']
             df.loc[idx, 'TIMESTAMP_FINAL'] = df.loc[idx + 1, 'TIMESTAMP']
-            df.loc[idx, 'GLANCE_DURATION_milliseconds'] = df.loc[idx, 'TIMESTAMP_FINAL'] - df.loc[idx, 'TIMESTAMP_INITIAL']
-            df.loc[idx, 'GLANCE_DURATION'] = df.loc[idx, 'GLANCE_DURATION_milliseconds'] / 1000
+            df.loc[idx, 'GLANCE_DURATION'] = df.loc[idx, 'TIMESTAMP_FINAL'] - df.loc[idx, 'TIMESTAMP_INITIAL']
             df.loc[idx, 'Glance_Type'] = glance_type_value
 
 # Handle the last row separately if it's not blank
 if not pd.isna(df.loc[len(df) - 1, 'GAZE_CLASS']):
     idx = len(df) - 1
-    if idx == 0 or df.loc[idx, 'OBJECT_FIXATED'] != df.loc[idx-1, 'OBJECT_FIXATED']:
+    if idx == 0 or df.loc[idx, 'ID_GAZE_CLASS'] != df.loc[idx-1, 'ID_GAZE_CLASS']:
         df.loc[idx, 'TIMESTAMP_INITIAL'] = df.loc[idx, 'TIMESTAMP']
         df.loc[idx, 'TIMESTAMP_FINAL'] = df.loc[idx, 'TIMESTAMP']
-        df.loc[idx, 'GLANCE_DURATION_milliseconds'] = 0
         df.loc[idx, 'GLANCE_DURATION'] = 0
         df.loc[idx, 'Glance_Type'] = glance_type_value
 
 # Save the modified DataFrame to a new Excel file
-output_file_path = '/mnt/data/TOTAL_acquisition_results_NewApproach_1_modified.xlsx'
+output_file_path = 'C:/Users/user/Desktop/User25_Gdansk_test/NEW_APPROACH_2/TOTAL_acquisition_results_NewApproach_7.xlsx'
 df.to_excel(output_file_path, sheet_name='Sheet1', index=False)
