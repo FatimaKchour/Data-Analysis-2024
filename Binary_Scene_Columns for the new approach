@@ -1,0 +1,33 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'TOTAL_acquisition_results_NewApproach_6.xlsx'
+df = pd.read_excel(file_path, sheet_name='Sheet1')
+
+# Define the columns to process
+columns = [
+    'Scene_road', 'Scene_sidewalk', 'Scene_building', 'Scene_wall', 'Scene_fence', 
+    'Scene_pole', 'Scene_traffic light', 'Scene_traffic sign', 'Scene_vegetation', 
+    'Scene_terrain', 'Scene_sky', 'Scene_person', 'Scene_rider', 'Scene_car', 
+    'Scene_truck', 'Scene_bus', 'Scene_train', 'Scene_motorcycle', 'Scene_bicycle'
+]
+
+# Create a list to hold the new column order
+new_columns_order = []
+
+# Process each column to create the new binary columns and insert them after the corresponding column
+for column in df.columns:
+    new_columns_order.append(column)
+    if column in columns:
+        binary_column = f'Binary_{column}'
+        df[binary_column] = df[column].apply(lambda x: 1 if pd.notna(x) and x != 0 else 0)
+        new_columns_order.append(binary_column)
+
+# Reorder the DataFrame columns
+df = df[new_columns_order]
+
+# Save the modified DataFrame to a new Excel file
+output_file_path = 'TOTAL_acquisition_results_NewApproach_6_with_binary_columns.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print("Modified Excel file saved to:", output_file_path)
