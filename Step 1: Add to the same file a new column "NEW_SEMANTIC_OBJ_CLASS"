@@ -1,8 +1,8 @@
 import pandas as pd
 
 # Load the Excel file
-file_path = 'TOTAL_acquisition_results.xlsx'
-sheet_name = 'Module2'  # Change to the correct sheet name
+file_path = 'C:/Users/user/Desktop/Gdansk_DATABASE/User26/User26_Results/results_total_merged.xlsx'
+sheet_name = 'acquisition_results'  # Change to the correct sheet name
 
 # Read the Excel file
 df = pd.read_excel(file_path, sheet_name=sheet_name)
@@ -12,10 +12,20 @@ df['NEW_SEMANTIC_OBJ_CLASS'] = df.apply(
     lambda row: row['GAZE_CLASS'] if pd.isna(row['SEMANTIC_OBJ_CLASS']) else row['SEMANTIC_OBJ_CLASS'], axis=1
 )
 
+# Replace 'nan' in SEMANTIC_OBJ_QUADRANT with values from GAZE_QUADRANT
+df['NEW_SEMANTIC_OBJ_QUADRANT'] = df.apply(
+    lambda row: row['GAZE_QUADRANT'] if pd.isna(row['SEMANTIC_OBJ_QUADRANT']) else row['SEMANTIC_OBJ_QUADRANT'], axis=1
+)
+
 # Find the position of 'SEMANTIC_OBJ_CLASS' column and insert 'NEW_SEMANTIC_OBJ_CLASS' immediately after it
 semantic_obj_class_index = df.columns.get_loc('SEMANTIC_OBJ_CLASS')
 columns = list(df.columns)
 columns.insert(semantic_obj_class_index + 1, columns.pop(columns.index('NEW_SEMANTIC_OBJ_CLASS')))
+df = df[columns]
+
+# Find the position of 'SEMANTIC_OBJ_QUADRANT' column and insert 'NEW_SEMANTIC_OBJ_QUADRANT' immediately after it
+semantic_obj_quadrant_index = df.columns.get_loc('SEMANTIC_OBJ_QUADRANT')
+columns.insert(semantic_obj_quadrant_index + 1, columns.pop(columns.index('NEW_SEMANTIC_OBJ_QUADRANT')))
 df = df[columns]
 
 # Save the updated dataframe back to the Excel file
