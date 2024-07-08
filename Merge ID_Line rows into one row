@@ -1,0 +1,28 @@
+import pandas as pd
+import numpy as np
+
+# Step 1: Read the Excel file into a pandas DataFrame
+file_path = 'C:/Users/user/Desktop/Gdansk_DATABASE/User25/QGIS_Data/Line.xlsx'
+df = pd.read_excel(file_path)
+
+# Step 2: Define a custom aggregation function
+def aggregate_values(series):
+    if series.dtype == 'object':
+        # For object type columns (strings), return the most frequent non-null value
+        return series.mode().iloc[0] if not series.isnull().all() else np.nan
+    else:
+        # For numeric columns, return the mean of non-null values
+        return series.mean()
+
+# Step 3: Group by ID_Line and aggregate the data using the custom function
+grouped = df.groupby('ID_Line').agg(aggregate_values).reset_index()
+
+# Step 4: Sort by ID_Line in ascending order
+grouped_sorted = grouped.sort_values(by='ID_Line')
+
+# Step 5: Write back to Excel if needed
+output_file_path = 'C:/Users/user/Desktop/Gdansk_DATABASE/User25/QGIS_Data/New_Line.xlsx'
+grouped_sorted.to_excel(output_file_path, index=False)
+
+# Step 6: Display or further process the result if needed
+print(grouped_sorted)
