@@ -1,0 +1,37 @@
+import pandas as pd
+import numpy as np
+
+# Step 1: Load the Excel files
+gaze_df = pd.read_excel(r"C:\Users\Ospite\Desktop\Joanna_files\test02\2025-05-26-neon\excel_files\gaze.xlsx")
+saccades_df = pd.read_excel(r"C:\Users\Ospite\Desktop\Joanna_files\test02\2025-05-26-neon\excel_files\saccades.xlsx")
+
+# Step 2: Sort gaze timestamps to help with search
+gaze_df = gaze_df.sort_values(by='timestamp [ns]').reset_index(drop=True)
+
+# Create an empty 'saccade id' column
+gaze_df['saccade id'] = np.nan
+
+# Step 3: Convert to NumPy for efficient searching
+gaze_timestamps = gaze_df['timestamp [ns]'].values
+
+# Step 4: Iterate through each saccade and assign its ID to gaze points in its time interval
+for idx, row in saccades_df.iterrows():
+    saccade_id = row['saccade id']
+    start_ts = row['start timestamp [ns]']
+    end_ts = row['end timestamp [ns]']
+    
+    # Find the nearest gaze timestamps using numpy search
+    start_idx = np.abs(gaze_timestamps - start_ts).argmin()
+    end_idx = np.abs(gaze_timestamps - end_ts).argmin()
+    
+    # Ensure start comes before end
+    if start_idx > end_idx:
+        start_idx, end_idx = end_idx, start_idx
+
+    # Assign saccade id to the relevant slice
+    gaze_df.loc[start_idx:end_idx, 'saccade id'] = saccade_id
+
+# Step 5: Save the updated gaze file
+gaze_df.to_excel(r"C:\Users\Ospite\Desktop\Joanna_files\test02\2025-05-26-neon\excel_files\gaze_with_saccade_ids.xlsx", index=False)
+
+print("✅ Saccade IDs successfully added to gaze data and saved.")
